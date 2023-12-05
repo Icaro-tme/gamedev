@@ -4,39 +4,32 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-[SerializeField] private Rigidbody _rb;
-    [SerializeField] private float _speed = 5;
-    [SerializeField] private float _turnSpeed = 360;
-    private Vector3 _input;
+    public float moveSpeed = 5.0f; // Velocidade de movimento do personagem
 
-    private void Update() {
-        GatherInput();
-        Look();
-    }
+    void Update()
+    {
+        // Input para movimentação
+        float horizontalInput = Input.GetAxis("Horizontal");
+        float verticalInput = Input.GetAxis("Vertical");
 
-    private void FixedUpdate() {
-        Move();
-    }
+        // Calcula a direção com base na câmera
+        Vector3 cameraForward = Camera.main.transform.forward;
+        Vector3 cameraRight = Camera.main.transform.right;
 
-    private void GatherInput() {
-        _input = new Vector3(Input.GetAxisRaw("Horizontal"), 0, Input.GetAxisRaw("Vertical"));
-    }
+        cameraForward.y = 0f;
+        cameraRight.y = 0f;
+        cameraForward.Normalize();
+        cameraRight.Normalize();
 
-    private void Look() {
-        if (_input == Vector3.zero) return;
+        Vector3 desiredMoveDirection = cameraForward * verticalInput + cameraRight * horizontalInput;
 
-        var rot = Quaternion.LookRotation(_input.ToIso(), Vector3.up);
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, rot, _turnSpeed * Time.deltaTime);
-    }
+        // Move o personagem na direção desejada
+        transform.Translate(desiredMoveDirection * moveSpeed * Time.deltaTime, Space.World);
 
-    private void Move() {
-        _rb.MovePosition(transform.position + transform.forward * _input.normalized.magnitude * _speed * Time.deltaTime);
+        // Se houver input de movimento, faz o personagem olhar na direção correta
+        if (desiredMoveDirection != Vector3.zero)
+        {
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(desiredMoveDirection), 0.15f);
+        }
     }
 }
-
-public static class Helpers 
-{
-    private static Matrix4x4 _isoMatrix = Matrix4x4.Rotate(Quaternion.Euler(0, 45, 0));
-    public static Vector3 ToIso(this Vector3 input) => _isoMatrix.MultiplyPoint3x4(input);
-}
-
