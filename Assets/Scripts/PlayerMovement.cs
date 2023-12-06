@@ -6,7 +6,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
     public float moveSpeed;
-    public float sprintMultiplier = 1.5f; // Sprint speed multiplier
+    public float sprintMultiplier = 1.5f; // Multiplicador de velocidade de corrida
 
     public float groundDrag;
 
@@ -14,14 +14,14 @@ public class PlayerMovement : MonoBehaviour
     public float jumpCooldown;
     public float airMultiplier;
     bool readyToJump;
-    bool isSprinting; // Track if the player is currently sprinting
+    bool isSprinting; // Indica se o jogador está atualmente correndo
 
     [HideInInspector] public float walkSpeed;
     [HideInInspector] public float sprintSpeed;
 
     [Header("Keybinds")]
     public KeyCode jumpKey = KeyCode.Space;
-    public KeyCode sprintKey = KeyCode.LeftShift; // Sprint key
+    public KeyCode sprintKey = KeyCode.LeftShift; // Tecla de corrida
 
     [Header("Ground Check")]
     public float groundCheckRadius = 0.3f;
@@ -37,7 +37,7 @@ public class PlayerMovement : MonoBehaviour
 
     Rigidbody rb;
 
-    // Added: Animator component
+    // Adicionado: Componente Animator
     public Animator playerAnimator;
 
     private void Start()
@@ -47,7 +47,7 @@ public class PlayerMovement : MonoBehaviour
 
         readyToJump = true;
 
-        // Added: Get Animator component from the child object
+        // Adicionado: Obter componente Animator do objeto filho
         playerAnimator = GetComponentInChildren<Animator>();
     }
 
@@ -57,26 +57,26 @@ public class PlayerMovement : MonoBehaviour
         MyInput();
         SpeedControl();
 
-        // handle drag
+        // Lidar com arrasto
         if (grounded)
             rb.drag = groundDrag;
         else
             rb.drag = 0;
 
-        // Added: Set animation parameters
+        // Adicionado: Definir parâmetros de animação
         SetAnimationParameters();
     }
 
     private void SetAnimationParameters()
     {
-        // set 1 if sprinting, 0.5 if walking, 0.25 if idle
+        // Definir 1 se estiver correndo, 0.5 se estiver andando, 0.25 se estiver parado
         playerAnimator.SetFloat("Speed_f", isSprinting ? 1f : (verticalInput != 0f ? 0.4f : 0.24f));
         playerAnimator.SetBool("Jump_b", !grounded);
     }
 
     private void UpdateGrounded()
     {
-        // Cast a sphere to check for ground
+        // Lançar uma esfera para verificar o solo
         grounded = Physics.CheckSphere(transform.position, groundCheckRadius, whatIsGround);
     }
 
@@ -90,7 +90,7 @@ public class PlayerMovement : MonoBehaviour
         horizontalInput = Input.GetAxisRaw("Horizontal");
         verticalInput = Input.GetAxisRaw("Vertical");
 
-        // Sprinting check
+        // Verificar corrida
         if (Input.GetKeyDown(sprintKey))
         {
             isSprinting = true;
@@ -102,7 +102,7 @@ public class PlayerMovement : MonoBehaviour
             ResetSprint();
         }
 
-        // when to jump
+        // Quando pular
         if (Input.GetKeyDown(jumpKey) && readyToJump && grounded)
         {
             readyToJump = false;
@@ -111,16 +111,16 @@ public class PlayerMovement : MonoBehaviour
         }
 
         moveDirection = orientation.forward * verticalInput + orientation.right * horizontalInput;
-        moveDirection.Normalize(); // Normalize the direction
+        moveDirection.Normalize(); // Normalizar a direção
     }
 
     private void MovePlayer()
     {
-        // on ground
+        // No chão
         if (grounded)
             rb.AddForce(moveDirection * GetCurrentSpeed() * 10f, ForceMode.Force);
 
-        // in air
+        // No ar
         else if (!grounded)
             rb.AddForce(moveDirection * GetCurrentSpeed() * 10f * airMultiplier, ForceMode.Force);
     }
@@ -129,7 +129,7 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector3 flatVel = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
 
-        // limit velocity if needed
+        // Limitar a velocidade, se necessário
         if (flatVel.magnitude > GetCurrentSpeed())
         {
             Vector3 limitedVel = flatVel.normalized * GetCurrentSpeed();
@@ -154,7 +154,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Jump()
     {
-        // reset y velocity
+        // Resetar velocidade no eixo y
         rb.velocity = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
         rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
     }
